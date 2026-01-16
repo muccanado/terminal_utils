@@ -8,7 +8,10 @@ on:
     inputs:
       command:
         description: "Command to save"
-        required: true
+        required: false
+      delete_timestamp:
+        description: "Timestamp to delete"
+        required: false
 
 jobs:
   save:
@@ -17,13 +20,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Update history (safe)
+      - name: Update history (add or delete)
         run: |
           node <<'EOF'
           const fs = require('fs');
 
           const file = 'history.json';
           const cmd = process.env.COMMAND;
+          const del = process.env.DELETE_TS;
           const ts = new Date().toISOString();
 
           let data = [];
@@ -35,16 +39,22 @@ jobs:
             }
           }
 
-          data.push({ timestamp: ts, command: cmd });
+          if (del) {
+            data = data.filter(r => r.timestamp !== del);
+          } else if (cmd) {
+            data.push({ timestamp: ts, command: cmd });
+          }
+
           fs.writeFileSync(file, JSON.stringify(data, null, 2));
           EOF
         env:
           COMMAND: ${{ github.event.inputs.command }}
+          DELETE_TS: ${{ github.event.inputs.delete_timestamp }}
 
       - name: Commit changes
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add history.json
-          git commit -m "Add command" || echo "Nothing to commit"
+          git commit -m "Update history" || echo "Nothing to commit"
           git push
