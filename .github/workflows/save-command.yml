@@ -1,11 +1,8 @@
 name: Save Command
 
 on:
-  workflow_dispatch:
-    inputs:
-      command:
-        description: "Command to save"
-        required: true
+  repository_dispatch:
+    types: [save-command]
 
 jobs:
   save:
@@ -19,7 +16,7 @@ jobs:
           FILE=docs/history.json
           TIMESTAMP=$(date -Iseconds)
 
-          jq ". += [{\"timestamp\":\"$TIMESTAMP\",\"command\":\"${{ github.event.inputs.command }}\"}]" $FILE > tmp.json
+          jq ". += [{\"timestamp\":\"$TIMESTAMP\",\"command\":\"${{ github.event.client_payload.command }}\"}]" $FILE > tmp.json
           mv tmp.json $FILE
 
       - name: Commit changes
