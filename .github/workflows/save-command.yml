@@ -1,8 +1,11 @@
 name: Save Command
 
 on:
-  repository_dispatch:
-    types: [save-command]
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "Command to save"
+        required: true
 
 jobs:
   save:
@@ -13,16 +16,16 @@ jobs:
 
       - name: Update history
         run: |
-          FILE=docs/history.json
+          FILE=history.json
           TIMESTAMP=$(date -Iseconds)
 
-          jq ". += [{\"timestamp\":\"$TIMESTAMP\",\"command\":\"${{ github.event.client_payload.command }}\"}]" $FILE > tmp.json
+          jq ". += [{\"timestamp\":\"$TIMESTAMP\",\"command\":\"${{ github.event.inputs.command }}\"}]" $FILE > tmp.json
           mv tmp.json $FILE
 
       - name: Commit changes
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add docs/history.json
+          git add history.json
           git commit -m "Add command"
           git push
