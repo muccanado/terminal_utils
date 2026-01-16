@@ -39,19 +39,22 @@ function build() {
 async function save() {
   if (!lastCommand) return alert("Nessun comando");
 
-  await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW}/dispatches`, {
-    method: "POST",
-    headers: {
-      "Accept": "application/vnd.github+json",
-      "Authorization": "Bearer " + prompt("Inserisci token GitHub"),
-    },
-    body: JSON.stringify({
-      ref: "main",
-      inputs: {
-        command: lastCommand
-      }
-    })
-  });
+  await fetch(
+    "https://api.github.com/repos/muccanado/terminal_utils/dispatches",
+    {
+      method: "POST",
+      headers: {
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        event_type: "save-command",
+        client_payload: {
+          command: lastCommand
+        }
+      })
+    }
+  );
 
   alert("Comando salvato");
 }
