@@ -21,8 +21,42 @@ function getToken() {
 /* ================= HISTORY ================= */
 
 async function loadHistory() {
-  const res = await fetch("./history.json");
-  const data = await res.json();
+  const urlsToTry = [
+    "./history.json",                          // stesso livello (docs/)
+    "../history.json",                         // root repo
+    "/terminal_utils/history.json"             // path assoluto Pages
+  ];
+
+  let text = null;
+
+  for (const url of urlsToTry) {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) continue;
+
+      const t = await res.text();
+      if (!t || !t.trim()) continue;
+
+      text = t;
+      break;
+    } catch {
+      // prova il prossimo
+    }
+  }
+
+  if (!text) {
+    console.warn("history.json non trovato o vuoto");
+    return;
+  }
+
+  let data;
+  try {
+    data = JSON.parse(text);
+    if (!Array.isArray(data)) data = [];
+  } catch {
+    console.warn("history.json non valido");
+    data = [];
+  }
 
   const ul = document.getElementById("history");
   ul.innerHTML = "";
