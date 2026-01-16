@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Command Builder</title>
+  <style>
+    body { font-family: Arial; max-width: 800px; margin: auto; }
+    input, select, button { margin: 5px 0; width: 100%; }
+    pre { background: #eee; padding: 10px; }
+  </style>
+</head>
+<body>
+
+<h2>Command Builder</h2>
+
+<label>Tipo comando</label>
+<select id="type">
+  <option value="wakeonlan">Wake-on-LAN</option>
+  <option value="copy">Copia file</option>
+  <option value="delete">Elimina</option>
+</select>
+
+<label>Parametro 1</label>
+<input id="p1" placeholder="MAC / source / path">
+
+<label>Parametro 2</label>
+<input id="p2" placeholder="IP / destination (opzionale)">
+
+<button onclick="build()">Costruisci comando</button>
+<button onclick="save()">Salva comando</button>
+
+<h3>Comando</h3>
+<pre id="output"></pre>
+
+<h3>Ultimi 5 comandi</h3>
+<ul id="history"></ul>
+
+<script src="app.js"></script>
+</body>
+</html>
