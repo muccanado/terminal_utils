@@ -62,10 +62,17 @@ async function loadHistory() {
   ul.innerHTML = "";
 
   data.slice(-5).reverse().forEach(h => {
-    const li = document.createElement("li");
-    li.textContent = `${h.timestamp} → ${h.command}`;
-    ul.appendChild(li);
-  });
+  const li = document.createElement("li");
+  li.textContent = `${h.timestamp} → ${h.command} `;
+
+  const btn = document.createElement("button");
+  btn.textContent = "❌";
+  btn.onclick = () => deleteRecord(h.timestamp);
+
+  li.appendChild(btn);
+  ul.appendChild(li);
+});
+
 }
 
 /* ================= COMMAND BUILDER ================= */
