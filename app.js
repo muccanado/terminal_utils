@@ -1,5 +1,5 @@
-const OWNER = "TUO_USERNAME";
-const REPO = "TUO_REPO";
+const OWNER = "muccanado";
+const REPO = "terminal_utils";
 const WORKFLOW = "save-command.yml";
 
 let lastCommand = "";
