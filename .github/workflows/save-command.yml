@@ -1,5 +1,8 @@
 name: Save Command
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
     inputs:
@@ -14,18 +17,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Update history
+      - name: Update history (safe)
         run: |
-          FILE=history.json
-          TIMESTAMP=$(date -Iseconds)
+          node <<'EOF'
+          const fs = require('fs');
 
-          jq ". += [{\"timestamp\":\"$TIMESTAMP\",\"command\":\"${{ github.event.inputs.command }}\"}]" $FILE > tmp.json
-          mv tmp.json $FILE
+          const file = 'history.json';
+          const cmd = process.env.COMMAND;
+          const ts = new Date().toISOString();
+
+          let data = [];
+          if (fs.existsSync(file)) {
+            try {
+              data = JSON.parse(fs.readFileSync(file, 'utf8') || '[]');
+            } catch {
+              data = [];
+            }
+          }
+
+          data.push({ timestamp: ts, command: cmd });
+          fs.writeFileSync(file, JSON.stringify(data, null, 2));
+          EOF
+        env:
+          COMMAND: ${{ github.event.inputs.command }}
 
       - name: Commit changes
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add history.json
-          git commit -m "Add command"
+          git commit -m "Add command" || echo "Nothing to commit"
           git push
