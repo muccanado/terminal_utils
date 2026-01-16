@@ -97,6 +97,40 @@ function build() {
   document.getElementById("output").textContent = lastCommand;
 }
 
+
+async function deleteRecord(timestamp) {
+  if (!confirm("Eliminare questo comando?")) return;
+
+  const token = getToken();
+  if (!token) return;
+
+  const res = await fetch(
+    `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW}/dispatches`,
+    {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        ref: "main",
+        inputs: {
+          delete_timestamp: timestamp
+        }
+      })
+    }
+  );
+
+  if (!res.ok) {
+    alert("Errore eliminazione: " + res.status);
+    return;
+  }
+
+  alert("Record eliminato");
+}
+
+
 /* ================= SAVE ================= */
 
 async function save() {
