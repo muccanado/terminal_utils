@@ -4,17 +4,37 @@ const WORKFLOW = "save-command.yml";
 
 let lastCommand = "";
 
+/* ================= TOKEN ================= */
+
+function getToken() {
+  let token = sessionStorage.getItem("gh_token");
+
+  if (!token) {
+    token = prompt("Inserisci GitHub Token (scope: workflow)");
+    if (!token) return null;
+    sessionStorage.setItem("gh_token", token);
+  }
+
+  return token;
+}
+
+/* ================= HISTORY ================= */
+
 async function loadHistory() {
   const res = await fetch("./history.json");
   const data = await res.json();
+
   const ul = document.getElementById("history");
   ul.innerHTML = "";
+
   data.slice(-5).reverse().forEach(h => {
     const li = document.createElement("li");
     li.textContent = `${h.timestamp} → ${h.command}`;
     ul.appendChild(li);
   });
 }
+
+/* ================= COMMAND BUILDER ================= */
 
 function build() {
   const type = document.getElementById("type").value;
@@ -36,27 +56,43 @@ function build() {
   document.getElementById("output").textContent = lastCommand;
 }
 
-async function save() {
-  if (!lastCommand) return alert("Nessun comando");
+/* ================= SAVE ================= */
 
-  await fetch(
-    "https://api.github.com/repos/muccanado/terminal_utils/dispatches",
+async function save() {
+  if (!lastCommand) {
+    alert("Nessun comando da salvare");
+    return;
+  }
+
+  const token = getToken();
+  if (!token) return;
+
+  const res = await fetch(
+    `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW}/dispatches`,
     {
       method: "POST",
       headers: {
+        "Authorization": "Bearer " + token,
         "Accept": "application/vnd.github+json",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        event_type: "save-command",
-        client_payload: {
+        ref: "main",
+        inputs: {
           command: lastCommand
         }
       })
     }
   );
 
+  if (!res.ok) {
+    alert("Errore GitHub: " + res.status);
+    return;
+  }
+
   alert("Comando salvato");
 }
+
+/* ================= INIT ================= */
 
 loadHistory();
